@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Validate OpenAPI Schema
-        uses: char0n/swagger-editor-validate@v1
+      - uses: actions/setup-node@v4
         with:
-          definition-file: openapi/public-v1.yaml
+          node-version: 22
+      - name: Validate OpenAPI Schema with Redocly
+        run: npx @redocly/cli lint openapi/public-v1.yaml
 
   check-generation:
     name: Test Code Generation Toolchain
