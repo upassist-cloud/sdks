@@ -1,0 +1,9 @@
+[submodule "python"]
+	path = python
+	url = https://github.com/upassist-cloud/upassist-python.git
+[submodule "typescript"]
+	path = typescript
+	url = https://github.com/upassist-cloud/upassist-js.git
+[submodule "go"]
+	path = go
+	url = https://github.com/upassist-cloud/upassist-go.git

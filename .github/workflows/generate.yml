@@ -1,0 +1,47 @@
+name: Validate & Generate SDKs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'openapi/**'
+      - 'scripts/**'
+      - 'facade/**'
+      - 'python-client.yaml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-schema:
+    name: Validate OpenAPI 3.1 Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate OpenAPI Schema
+        uses: char0n/swagger-editor-validate@v1
+        with:
+          definition-file: openapi/public-v1.yaml
+
+  check-generation:
+    name: Test Code Generation Toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Verify tools presence
+        run: |
+          go version
+          node --version
+          uv --version
