@@ -9216,8 +9216,9 @@ components:
         message:
           type: string
         request_id:
-          type: string
-          nullable: true
+          type:
+            - string
+            - "null"
       title: Error
     HeartbeatDetailResponse:
       properties:
