@@ -857,36 +857,6 @@ paths:
       deprecated: false
       security:
       - projectApiKey: []
-  /v1/incidents/{incident_id}:
-    get:
-      tags:
-      - 'Public API: Incidents'
-      summary: Detail
-      operationId: incident_get
-      parameters:
-      - name: incident_id
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-        deprecated: false
-      responses:
-        '200':
-          description: Request fulfilled, document follows
-          headers: {}
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IncidentDetailSchema'
-        '400': *id001
-        '401': *id001
-        '403': *id001
-        '404': *id001
-        '422': *id001
-      deprecated: false
-      security:
-      - projectApiKey: []
   /v1/incidents:
     get:
       tags:
@@ -1008,6 +978,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IncidentPublicPaginatedSchema'
+        '400': *id001
+        '401': *id001
+        '403': *id001
+        '404': *id001
+        '422': *id001
+      deprecated: false
+      security:
+      - projectApiKey: []
+    post:
+      tags:
+      - 'Public API: Incidents'
+      summary: CreateIncident
+      operationId: incident_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentCreateSchema'
+        required: true
+      responses:
+        '201':
+          description: Document created, URL follows
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentDetailSchema'
+        '400': *id001
+        '401': *id001
+        '403': *id001
+        '404': *id001
+        '422': *id001
+      deprecated: false
+      security:
+      - projectApiKey: []
+  /v1/incidents/{incident_id}:
+    get:
+      tags:
+      - 'Public API: Incidents'
+      summary: Detail
+      operationId: incident_get
+      parameters:
+      - name: incident_id
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+        deprecated: false
+      responses:
+        '200':
+          description: Request fulfilled, document follows
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentDetailSchema'
         '400': *id001
         '401': *id001
         '403': *id001
@@ -4170,11 +4197,11 @@ paths:
       security:
       - projectApiKey: []
   /api/ping/{heartbeat_id}:
-    post:
+    get:
       tags:
       - Heartbeats ping
       summary: Heartbeat Ping Old
-      operationId: heartbeat_ping_old_post
+      operationId: heartbeat_ping_old_get
       deprecated: true
       parameters:
       - name: heartbeat_id
@@ -4231,11 +4258,11 @@ paths:
       servers:
       - url: https://heartbeats.upassist.cloud
       security: *id002
-    get:
+    post:
       tags:
       - Heartbeats ping
       summary: Heartbeat Ping Old
-      operationId: heartbeat_ping_old_get
+      operationId: heartbeat_ping_old_post
       deprecated: true
       parameters:
       - name: heartbeat_id
@@ -4262,11 +4289,11 @@ paths:
       - url: https://heartbeats.upassist.cloud
       security: *id002
   /api/event/{heartbeat_slug}:
-    post:
+    get:
       tags:
       - Heartbeats ping
       summary: Heartbeat Ping
-      operationId: heartbeat_ping_post
+      operationId: heartbeat_ping_get
       parameters:
       - name: heartbeat_slug
         in: path
@@ -4365,11 +4392,11 @@ paths:
       servers:
       - url: https://heartbeats.upassist.cloud
       security: *id003
-    get:
+    post:
       tags:
       - Heartbeats ping
       summary: Heartbeat Ping
-      operationId: heartbeat_ping_get
+      operationId: heartbeat_ping_post
       parameters:
       - name: heartbeat_slug
         in: path
@@ -6345,7 +6372,62 @@ components:
       - SITE_ALERT
       - ERROR_ISSUE
       - CHART_ALERT
+      - MANUAL
       title: IncidentContentTypeEnum
+    IncidentCreateSchema:
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 1
+          description: Incident title or summary
+        cause:
+          type: string
+          minLength: 1
+          description: Root cause or description of the incident
+        started_at:
+          oneOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          description: Start time (UTC). Defaults to current time if omitted.
+        severity:
+          oneOf:
+          - type: string
+          - type: 'null'
+          description: Optional severity indicator (e.g. critical, major, minor, warning)
+        meta:
+          oneOf:
+          - type: object
+          - type: 'null'
+          description: Arbitrary custom metadata dictionary
+        send_alert:
+          type: boolean
+          description: Whether to dispatch alert notifications to project integrations
+          default: true
+        monitor_id:
+          oneOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          description: Optional associated monitor ID
+        heartbeat_id:
+          oneOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          description: Optional associated heartbeat ID
+        site_alert_id:
+          oneOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          description: Optional associated site alert ID
+      type: object
+      required:
+      - cause
+      - name
+      title: IncidentCreateSchema
     IncidentDetailSchema:
       properties:
         id:
@@ -8403,6 +8485,12 @@ components:
         metrics_bytes_total:
           type: integer
           default: 0
+        health_status:
+          type: string
+          default: OFFLINE
+        current_eps:
+          type: number
+          default: 0.0
       type: object
       required:
       - id
@@ -9217,8 +9305,8 @@ components:
           type: string
         request_id:
           type:
-            - string
-            - "null"
+          - string
+          - 'null'
       title: Error
     HeartbeatDetailResponse:
       properties:
