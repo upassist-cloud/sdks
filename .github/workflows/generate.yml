@@ -8,6 +8,10 @@ on:
       - 'scripts/**'
       - 'facade/**'
       - 'python-client.yaml'
+      - 'typescript'
+      - 'python'
+      - 'go'
+      - '.github/**'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
